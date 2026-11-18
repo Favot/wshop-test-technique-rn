@@ -11,6 +11,8 @@ This repository contains the full implementation of the technical test for the R
 
 Each exercise is linked to a pull request, with more detail and context on how I solved it.
 
+- Exercice 1: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/1)
+
 ## Get started
 
 1. Install dependencies
