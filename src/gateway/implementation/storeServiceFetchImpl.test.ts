@@ -2,8 +2,10 @@ import { storeService } from "./storeServiceFetchImpl";
 
 const BASE_URL = "http://localhost:3001";
 
-const mockFetch = (data: unknown) => {
-  const fetchMock = jest.fn().mockResolvedValue({ json: async () => data });
+const mockFetch = (data: unknown, { ok = true, status = 200 } = {}) => {
+  const fetchMock = jest
+    .fn()
+    .mockResolvedValue({ ok, status, json: async () => data });
   globalThis.fetch = fetchMock as unknown as typeof fetch;
   return fetchMock;
 };
@@ -60,5 +62,29 @@ describe("storeService (fetch implementation)", () => {
 
     expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores/42`);
     expect(result).toEqual(store);
+  });
+
+  it("fetchStores throws when the response is not ok", async () => {
+    mockFetch(null, { ok: false, status: 500 });
+
+    await expect(storeService.fetchStores()).rejects.toThrow(
+      `Request failed (500): ${BASE_URL}/stores`,
+    );
+  });
+
+  it("fetchStoreById throws when the response is not ok", async () => {
+    mockFetch(null, { ok: false, status: 404 });
+
+    await expect(storeService.fetchStoreById("42")).rejects.toThrow(
+      `Request failed (404): ${BASE_URL}/stores/42`,
+    );
+  });
+
+  it("propagates network errors", async () => {
+    globalThis.fetch = jest
+      .fn()
+      .mockRejectedValue(new Error("Network down")) as unknown as typeof fetch;
+
+    await expect(storeService.fetchStores()).rejects.toThrow("Network down");
   });
 });
