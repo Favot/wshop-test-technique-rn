@@ -1,4 +1,6 @@
-import { storeService } from "./storeServiceImpl";
+import AsyncStorage from "@react-native-async-storage/async-storage";
+
+import { FAVORITES_STORAGE_KEY, storeService } from "./storeServiceImpl";
 
 const BASE_URL = "http://localhost:3001";
 const PAGINATION = "_page=1&_per_page=5";
@@ -113,5 +115,32 @@ describe("storeService (fetch implementation)", () => {
       .mockRejectedValue(new Error("Network down")) as unknown as typeof fetch;
 
     await expect(storeService.fetchStores()).rejects.toThrow("Network down");
+  });
+});
+
+describe("storeService favorites", () => {
+  beforeEach(async () => {
+    await AsyncStorage.clear();
+  });
+
+  it("isFavorite returns false for a store that was never toggled", async () => {
+    await expect(storeService.isFavorite("1")).resolves.toBe(false);
+  });
+
+  it("toggleFavorite marks a store as favorite and toggles it back", async () => {
+    await storeService.toggleFavorite("1");
+    await expect(storeService.isFavorite("1")).resolves.toBe(true);
+
+    await storeService.toggleFavorite("1");
+    await expect(storeService.isFavorite("1")).resolves.toBe(false);
+  });
+
+  it("toggleFavorite persists the favorite ids under the favorites key", async () => {
+    await storeService.toggleFavorite("1");
+    await storeService.toggleFavorite("2");
+
+    expect(await AsyncStorage.getItem(FAVORITES_STORAGE_KEY)).toBe(
+      JSON.stringify(["1", "2"]),
+    );
   });
 });

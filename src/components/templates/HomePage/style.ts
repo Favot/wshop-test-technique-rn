@@ -5,7 +5,8 @@ export const styles = StyleSheet.create({
   },
   container: {
     flex: 1,
-    padding: 16,
+    padding: 8,
+    gap: 16,
   },
   listContent: {
     gap: 16,
@@ -15,10 +16,8 @@ export const styles = StyleSheet.create({
     borderColor: "gray",
     padding: 8,
     borderRadius: 8,
-    marginBottom: 16,
     fontSize: 16,
     fontWeight: "bold",
     color: "black",
-    minHeight: 40,
   },
 });
