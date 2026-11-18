@@ -78,9 +78,13 @@ describe("CardStore", () => {
     });
 
     it("rehydrates the items from storage", async () => {
-      addItem(apple);
-
-      useCartStore.setState({ items: [] });
+      // Simulate an app restart: storage has a cart, memory is empty.
+      // (Seed storage directly: `setState` would persist the empty cart too.)
+      const { name, storage } = useCartStore.persist.getOptions();
+      await storage?.setItem(name as string, {
+        state: { items: [{ ...apple, quantity: 1 }] },
+        version: 0,
+      });
       expect(getItems()).toEqual([]);
 
       await useCartStore.persist.rehydrate();
