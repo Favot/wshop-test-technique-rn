@@ -16,9 +16,9 @@ export const StoresItem = memo(function StoresItem({ store }: StoresItemProps) {
         source={{ uri: store.imageUrl }}
         style={styles.image}
       />
-      <Text>{store.name}</Text>
-      <Text>{store.address}</Text>
-      <Text>{store.phone}</Text>
+      <Text style={styles.text}>{store.name}</Text>
+      <Text style={styles.text}>{store.address}</Text>
+      <Text style={styles.text}>{store.phone}</Text>
     </View>
   );
 });
@@ -27,5 +27,10 @@ const styles = StyleSheet.create({
   image: {
     width: "100%",
     height: 150,
+  },
+  text: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "black",
   },
 });
