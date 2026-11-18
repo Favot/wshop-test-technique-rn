@@ -1,4 +1,6 @@
 import { StoresModel } from "./StoresModel";
 
-export type fetchStores = () => Promise<StoresModel[]>;
-export type fetchStoreById = (id: string) => Promise<StoresModel>;
+export type StoresServiceType = {
+  fetchStores: () => Promise<StoresModel[]>;
+  fetchStoreById: (id: string) => Promise<StoresModel>;
+};
