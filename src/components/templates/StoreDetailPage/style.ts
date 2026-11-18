@@ -27,4 +27,16 @@ export const styles = StyleSheet.create({
     fontSize: 16,
     color: "black",
   },
+  favoriteButton: {
+    alignSelf: "flex-start",
+    paddingVertical: 8,
+    paddingHorizontal: 16,
+    borderRadius: 8,
+    backgroundColor: "#208AEF",
+  },
+  favoriteButtonText: {
+    fontSize: 16,
+    fontWeight: "bold",
+    color: "white",
+  },
 });

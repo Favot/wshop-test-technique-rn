@@ -3,6 +3,7 @@ import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   cleanup,
+  fireEvent,
   render,
   waitFor,
   within,
@@ -44,7 +45,12 @@ const queryClients: QueryClient[] = [];
 
 const setup = async (fetchStoreById: jest.Mock, id = store.id) => {
   jest.mocked(getServiceRegistry).mockReturnValue({
-    storesService: { fetchStores: jest.fn(), fetchStoreById },
+    storesService: {
+      fetchStores: jest.fn(),
+      fetchStoreById,
+      toggleFavorite: jest.fn(),
+      isFavorite: jest.fn(),
+    },
   });
 
   const queryClient = new QueryClient({
@@ -210,6 +216,34 @@ describe("StoreDetailPage", () => {
       const { queryByTestId } = await setup(neverResolves);
 
       expect(queryByTestId("store-map")).not.toBeOnTheScreen();
+    });
+  });
+
+  describe("favorite button", () => {
+    it("displays a Favori button once the store is fetched", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByRole } = await setup(fetchStoreById);
+
+      expect(await findByRole("button", { name: "Favori" })).toBeOnTheScreen();
+    });
+
+    it("does not display the Favori button while the store is loading", async () => {
+      const neverResolves = jest.fn().mockReturnValue(new Promise(() => {}));
+
+      const { queryByRole } = await setup(neverResolves);
+
+      expect(queryByRole("button", { name: "Favori" })).not.toBeOnTheScreen();
+    });
+
+    it("throws a not implemented error when pressed", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+      const { findByRole } = await setup(fetchStoreById);
+      const button = await findByRole("button", { name: "Favori" });
+
+      await expect(fireEvent.press(button)).rejects.toThrow(
+        "Not implemented yet",
+      );
     });
   });
 

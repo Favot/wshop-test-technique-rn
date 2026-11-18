@@ -2,12 +2,21 @@ import { OpeningHours, StoreMap } from "@/components/molecules";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
-import { ActivityIndicator, ScrollView, Text, View } from "react-native";
+import {
+  ActivityIndicator,
+  Pressable,
+  ScrollView,
+  Text,
+  View,
+} from "react-native";
 import { Edge, SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "./style";
 
-// The stack header already handles the top inset.
 const SAFE_AREA_EDGES: Edge[] = ["left", "right", "bottom"];
+
+const handleFavoritePress = () => {
+  throw new Error("Not implemented yet");
+};
 
 type StoreDetailPageProps = {
   id: string;
@@ -43,6 +52,14 @@ export const StoreDetailPage = ({ id }: StoreDetailPageProps) => {
             style={styles.image}
           />
           <Text style={styles.name}>{store.name}</Text>
+          <Pressable
+            testID="favorite-button"
+            accessibilityRole="button"
+            style={styles.favoriteButton}
+            onPress={handleFavoritePress}
+          >
+            <Text style={styles.favoriteButtonText}>Favori</Text>
+          </Pressable>
           <Text style={styles.text}>{store.address}</Text>
           <Text style={styles.text}>{store.phone}</Text>
           <OpeningHours openingHours={store.openingHours} />
