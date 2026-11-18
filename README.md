@@ -18,6 +18,7 @@ Each exercise is linked to a pull request, with more detail and context on how I
   - Exercise 1: Custom hook `useFetch`: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/3)
   - Exercise 2: Optimise FlatList: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/4)
   - Exercise 3: Zustand Store: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/5)
+  - Exercise 4: Unit tests: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/6)
 
 ## Get started
 
