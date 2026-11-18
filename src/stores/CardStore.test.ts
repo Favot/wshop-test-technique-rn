@@ -64,6 +64,32 @@ describe("CardStore", () => {
 
       expect(selectCartTotal(useCartStore.getState())).toBe(3 * 2 + 3);
     });
+
+    describe("memoization", () => {
+      beforeEach(() => selectCartTotal.resetRecomputations());
+
+      it("does not recompute when items are unchanged", () => {
+        addItem(apple);
+        const state = useCartStore.getState();
+
+        selectCartTotal(state);
+        selectCartTotal(state);
+
+        selectCartTotal({ ...state });
+
+        expect(selectCartTotal.recomputations()).toBe(1);
+      });
+
+      it("recomputes when items change", () => {
+        addItem(apple);
+        selectCartTotal(useCartStore.getState());
+
+        addItem(pear);
+        selectCartTotal(useCartStore.getState());
+
+        expect(selectCartTotal.recomputations()).toBe(2);
+      });
+    });
   });
 
   describe("persistence", () => {
