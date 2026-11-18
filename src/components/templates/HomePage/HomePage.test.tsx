@@ -4,6 +4,7 @@ import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
   act,
+  cleanup,
   fireEvent,
   render,
   userEvent,
@@ -52,14 +53,17 @@ const fetchStoresByPage = (source: StoresModel[] = stores) =>
     };
   });
 
+const queryClients: QueryClient[] = [];
+
 const setup = async (fetchStores: jest.Mock) => {
   jest.mocked(getServiceRegistry).mockReturnValue({
     storesService: { fetchStores, fetchStoreById: jest.fn() },
   });
 
   const queryClient = new QueryClient({
-    defaultOptions: { queries: { retry: false } },
+    defaultOptions: { queries: { retry: false, gcTime: Infinity } },
   });
+  queryClients.push(queryClient);
 
   const utils = await render(
     <QueryClientProvider client={queryClient}>
@@ -77,7 +81,10 @@ const endReached = async (list: Parameters<typeof fireEvent>[0]) => {
 };
 
 describe("HomePage", () => {
-  afterEach(() => {
+  afterEach(async () => {
+    cleanup();
+    await Promise.all(queryClients.map((client) => client.cancelQueries()));
+    queryClients.splice(0).forEach((client) => client.clear());
     jest.resetAllMocks();
   });
 
