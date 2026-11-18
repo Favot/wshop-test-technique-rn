@@ -1,7 +1,12 @@
 import { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { cleanup, render, waitFor } from "@testing-library/react-native";
+import {
+  cleanup,
+  render,
+  waitFor,
+  within,
+} from "@testing-library/react-native";
 
 import { StoreDetailPage } from "./StoreDetailPage";
 
@@ -108,6 +113,77 @@ describe("StoreDetailPage", () => {
       expect(getByText(store.address)).toBeOnTheScreen();
       expect(getByText(store.phone)).toBeOnTheScreen();
       expect(await findByTestId(`store-image-${store.id}`)).toBeOnTheScreen();
+    });
+  });
+
+  describe("opening hours", () => {
+    it("displays the opening hours of every day of the week", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByTestId, getByText } = await setup(fetchStoreById);
+
+      expect(await findByTestId("opening-hours")).toBeOnTheScreen();
+      expect(getByText("Horaires")).toBeOnTheScreen();
+      [
+        "Lundi",
+        "Mardi",
+        "Mercredi",
+        "Jeudi",
+        "Vendredi",
+        "Samedi",
+        "Dimanche",
+      ].forEach((day) => expect(getByText(day)).toBeOnTheScreen());
+    });
+
+    it("displays the opening and closing time of a day", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByTestId } = await setup(fetchStoreById);
+
+      const monday = within(await findByTestId("opening-hours-monday"));
+      expect(monday.getByText("Lundi")).toBeOnTheScreen();
+      expect(monday.getByText("09:00 - 18:00")).toBeOnTheScreen();
+
+      const saturday = within(await findByTestId("opening-hours-saturday"));
+      expect(saturday.getByText("10:00 - 17:00")).toBeOnTheScreen();
+    });
+
+    it("displays all the time ranges of a day split in several ranges", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue({
+        ...store,
+        openingHours: {
+          ...store.openingHours,
+          monday: [
+            { open: "09:00", close: "12:00" },
+            { open: "14:00", close: "18:00" },
+          ],
+        },
+      });
+
+      const { findByTestId } = await setup(fetchStoreById);
+
+      const monday = within(await findByTestId("opening-hours-monday"));
+      expect(
+        monday.getByText("09:00 - 12:00, 14:00 - 18:00"),
+      ).toBeOnTheScreen();
+    });
+
+    it("displays a day without any time range as closed", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByTestId } = await setup(fetchStoreById);
+
+      const sunday = within(await findByTestId("opening-hours-sunday"));
+      expect(sunday.getByText("Dimanche")).toBeOnTheScreen();
+      expect(sunday.getByText("Fermé")).toBeOnTheScreen();
+    });
+
+    it("does not display the opening hours while the store is loading", async () => {
+      const neverResolves = jest.fn().mockReturnValue(new Promise(() => {}));
+
+      const { queryByTestId } = await setup(neverResolves);
+
+      expect(queryByTestId("opening-hours")).not.toBeOnTheScreen();
     });
   });
 
