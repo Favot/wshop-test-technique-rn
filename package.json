@@ -46,7 +46,15 @@
     "test:watch": "jest --watchAll"
   },
   "jest": {
-    "preset": "jest-expo"
+    "preset": "jest-expo",
+    "moduleNameMapper": {
+      "^@/assets/(.*)$": "<rootDir>/assets/$1",
+      "\\.css$": "<rootDir>/__mocks__/style-mock.js"
+    },
+    "resolver": "react-native-reanimated/jest/resolver",
+    "setupFilesAfterEnv": [
+      "<rootDir>/jest/setup.js"
+    ]
   },
   "private": true
 }
