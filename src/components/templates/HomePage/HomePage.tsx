@@ -1,26 +1,42 @@
-import { useQuery } from "@tanstack/react-query";
-import { ActivityIndicator, FlatList, Text, View } from "react-native";
+import { keepPreviousData, useQuery } from "@tanstack/react-query";
+import { useState } from "react";
+import {
+  ActivityIndicator,
+  FlatList,
+  Text,
+  TextInput,
+  View,
+} from "react-native";
 
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 
 export const HomePage = () => {
-  const { data: stores, isPending } = useQuery({
-    queryKey: ["stores"],
-    queryFn: () => getServiceRegistry().storesService.fetchStores(),
-  });
+  const [name, setName] = useState("");
 
-  if (isPending) {
-    return <ActivityIndicator testID="loader" />;
-  }
+  const { data: stores, isPending } = useQuery({
+    queryKey: ["stores", name],
+    queryFn: () => getServiceRegistry().storesService.fetchStores(name),
+    placeholderData: keepPreviousData,
+  });
 
   return (
     <View>
-      <FlatList
-        testID="store-list"
-        data={stores}
-        keyExtractor={(store) => store.id}
-        renderItem={({ item }) => <Text>{item.name}</Text>}
+      <TextInput
+        testID="search-input"
+        placeholder="Rechercher un magasin"
+        value={name}
+        onChangeText={setName}
       />
+      {isPending ? (
+        <ActivityIndicator testID="loader" />
+      ) : (
+        <FlatList
+          testID="store-list"
+          data={stores}
+          keyExtractor={(store) => store.id}
+          renderItem={({ item }) => <Text>{item.name}</Text>}
+        />
+      )}
     </View>
   );
 };
