@@ -17,6 +17,34 @@ describe("storeService (fetch implementation)", () => {
     expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores`);
   });
 
+  it("fetchStores filters by name using the json-server `contains` operator", async () => {
+    const fetchMock = mockFetch([]);
+
+    await storeService.fetchStores("Paris");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE_URL}/stores?name:contains=Paris`,
+    );
+  });
+
+  it("fetchStores url-encodes the name filter", async () => {
+    const fetchMock = mockFetch([]);
+
+    await storeService.fetchStores("Rép & Co");
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE_URL}/stores?name:contains=${encodeURIComponent("Rép & Co")}`,
+    );
+  });
+
+  it("fetchStores does not add a filter when the name is empty", async () => {
+    const fetchMock = mockFetch([]);
+
+    await storeService.fetchStores("");
+
+    expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores`);
+  });
+
   it("fetchStores returns the parsed stores", async () => {
     const stores = [{ id: "1", name: "Store 1" }];
     mockFetch(stores);

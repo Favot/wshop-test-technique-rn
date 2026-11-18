@@ -1,7 +1,7 @@
 import { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, waitFor } from "@testing-library/react-native";
+import { render, userEvent, waitFor } from "@testing-library/react-native";
 
 import { HomePage } from "./HomePage";
 
@@ -83,6 +83,39 @@ describe("HomePage", () => {
       const { findByText } = await setup(fetchStores);
 
       expect(await findByText("Store 1")).toBeOnTheScreen();
+    });
+  });
+
+  describe("filter by name", () => {
+    const fetchStoresFilteredByName = () =>
+      jest.fn(async (name?: string) =>
+        stores.filter((store) =>
+          store.name.toLowerCase().includes((name ?? "").toLowerCase()),
+        ),
+      );
+
+    it("fetches the stores matching the typed name", async () => {
+      const fetchStores = fetchStoresFilteredByName();
+      const user = userEvent.setup();
+
+      const { findByTestId } = await setup(fetchStores);
+      await user.type(await findByTestId("search-input"), "Store 12");
+
+      await waitFor(() =>
+        expect(fetchStores).toHaveBeenLastCalledWith("Store 12"),
+      );
+    });
+
+    it("only displays the stores matching the typed name", async () => {
+      const fetchStores = fetchStoresFilteredByName();
+      const user = userEvent.setup();
+
+      const { findByTestId, findByText, queryByText } =
+        await setup(fetchStores);
+      await user.type(await findByTestId("search-input"), "Store 12");
+
+      expect(await findByText("Store 12")).toBeOnTheScreen();
+      await waitFor(() => expect(queryByText("Store 1")).not.toBeOnTheScreen());
     });
   });
 });
