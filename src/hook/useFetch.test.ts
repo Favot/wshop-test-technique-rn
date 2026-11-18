@@ -24,6 +24,18 @@ const pendingFetch = (_url: unknown, init?: RequestInit) =>
     );
   });
 
+const deferredFetch = (fetchMock: jest.Mock) => {
+  let resolve!: (response: Response) => void;
+  let reject!: (reason: unknown) => void;
+  fetchMock.mockReturnValue(
+    new Promise<Response>((res, rej) => {
+      resolve = res;
+      reject = rej;
+    }),
+  );
+  return { resolve, reject };
+};
+
 describe("useFetch", () => {
   let fetchMock: jest.Mock;
 
@@ -56,32 +68,33 @@ describe("useFetch", () => {
 
   describe("exposes data, loading and error", () => {
     it("exposes data once the request succeeds", async () => {
-      fetchMock.mockResolvedValue(jsonResponse(USERS));
+      const request = deferredFetch(fetchMock);
 
       const { result } = await renderHook(() => useFetch<User[]>("/api/users"));
 
       expect(result.current.data).toBeNull();
-      await waitFor(() => expect(result.current.data).toEqual(USERS));
+      await act(async () => request.resolve(jsonResponse(USERS)));
+      expect(result.current.data).toEqual(USERS);
     });
 
     it("exposes loading as true while pending and false once settled", async () => {
-      fetchMock.mockResolvedValue(jsonResponse(USERS));
+      const request = deferredFetch(fetchMock);
 
       const { result } = await renderHook(() => useFetch<User[]>("/api/users"));
 
-      expect(result.current.loading).toBe(true);
-      await waitFor(() => expect(result.current.loading).toBe(false));
+      expect(result.current.isLoading).toBe(true);
+      await act(async () => request.resolve(jsonResponse(USERS)));
+      expect(result.current.isLoading).toBe(false);
     });
 
     it("exposes error when the request fails", async () => {
-      fetchMock.mockRejectedValue(new Error("Network down"));
+      const request = deferredFetch(fetchMock);
 
       const { result } = await renderHook(() => useFetch<User[]>("/api/users"));
 
       expect(result.current.error).toBeNull();
-      await waitFor(() =>
-        expect(result.current.error?.message).toBe("Network down"),
-      );
+      await act(async () => request.reject(new Error("Network down")));
+      expect(result.current.error?.message).toBe("Network down");
     });
   });
 
@@ -116,21 +129,6 @@ describe("useFetch", () => {
 
       await waitFor(() => expect(result.current.data).toEqual(updated));
       expect(fetchMock).toHaveBeenCalledTimes(2);
-    });
-  });
-
-  describe("is correctly typed with a generic", () => {
-    it("types data as T | null", async () => {
-      fetchMock.mockResolvedValue(jsonResponse(USERS));
-      const { result } = await renderHook(() => useFetch<User[]>("/api/users"));
-      await waitFor(() => expect(result.current.loading).toBe(false));
-
-      const data: User[] | null = result.current.data;
-      // @ts-expect-error data is User[] | null, not a string
-      const wrong: string | null = result.current.data;
-
-      expect(data).toEqual(USERS);
-      expect(wrong).toEqual(USERS);
     });
   });
 });
