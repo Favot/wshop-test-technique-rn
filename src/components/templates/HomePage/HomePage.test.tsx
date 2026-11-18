@@ -13,7 +13,7 @@ const createStore = (index: number): StoresModel => ({
   id: String(index),
   name: `Store ${index}`,
   address: `${index} rue de Paris, 75001 Paris`,
-  phone: "+33 1 23 45 67 89",
+  phone: `01 23 45 67 ${String(index).padStart(2, "0")}`,
   imageUrl: `https://example.com/stores/${index}.jpg`,
   openingHours: {
     monday: [{ open: "09:00", close: "18:00" }],
@@ -83,6 +83,18 @@ describe("HomePage", () => {
       const { findByText } = await setup(fetchStores);
 
       expect(await findByText("Store 1")).toBeOnTheScreen();
+    });
+
+    it("displays the name, address, phone and image of a store", async () => {
+      const fetchStores = jest.fn().mockResolvedValue(stores);
+      const [store] = stores;
+
+      const { findByText, getByText, findByTestId } = await setup(fetchStores);
+
+      expect(await findByText(store.name)).toBeOnTheScreen();
+      expect(getByText(store.address)).toBeOnTheScreen();
+      expect(getByText(store.phone)).toBeOnTheScreen();
+      expect(await findByTestId(`store-image-${store.id}`)).toBeOnTheScreen();
     });
   });
 
