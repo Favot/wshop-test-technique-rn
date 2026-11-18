@@ -143,4 +143,82 @@ describe("storeService favorites", () => {
       JSON.stringify(["1", "2"]),
     );
   });
+
+  describe("fetchFavorites", () => {
+    const mockFetchByUrl = (
+      stores: Record<string, unknown>,
+      failingIds: Record<string, number> = {},
+    ) => {
+      const fetchMock = jest.fn(async (url: string) => {
+        const id = url.split("/").pop() as string;
+        if (id in failingIds) {
+          return { ok: false, status: failingIds[id], json: async () => null };
+        }
+        return { ok: true, status: 200, json: async () => stores[id] };
+      });
+      globalThis.fetch = fetchMock as unknown as typeof fetch;
+      return fetchMock;
+    };
+
+    it("returns an empty list without calling the API when there are no favorites", async () => {
+      const fetchMock = mockFetchByUrl({});
+
+      await expect(storeService.fetchFavorites()).resolves.toEqual([]);
+      expect(fetchMock).not.toHaveBeenCalled();
+    });
+
+    it("fetches each favorite store by id", async () => {
+      const fetchMock = mockFetchByUrl({
+        "1": { id: "1", name: "Store 1" },
+        "2": { id: "2", name: "Store 2" },
+      });
+      await storeService.toggleFavorite("1");
+      await storeService.toggleFavorite("2");
+
+      await storeService.fetchFavorites();
+
+      expect(fetchMock).toHaveBeenCalledTimes(2);
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores/1`);
+      expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores/2`);
+    });
+
+    it("returns the favorite stores in the order they were favorited", async () => {
+      mockFetchByUrl({
+        "1": { id: "1", name: "Store 1" },
+        "2": { id: "2", name: "Store 2" },
+      });
+      await storeService.toggleFavorite("2");
+      await storeService.toggleFavorite("1");
+
+      await expect(storeService.fetchFavorites()).resolves.toEqual([
+        { id: "2", name: "Store 2" },
+        { id: "1", name: "Store 1" },
+      ]);
+    });
+
+    it("does not include a store that was un-favorited", async () => {
+      const fetchMock = mockFetchByUrl({
+        "1": { id: "1", name: "Store 1" },
+        "2": { id: "2", name: "Store 2" },
+      });
+      await storeService.toggleFavorite("1");
+      await storeService.toggleFavorite("2");
+      await storeService.toggleFavorite("1");
+
+      await expect(storeService.fetchFavorites()).resolves.toEqual([
+        { id: "2", name: "Store 2" },
+      ]);
+      expect(fetchMock).not.toHaveBeenCalledWith(`${BASE_URL}/stores/1`);
+    });
+
+    it("throws when one of the favorite requests fails", async () => {
+      mockFetchByUrl({ "1": { id: "1", name: "Store 1" } }, { "2": 404 });
+      await storeService.toggleFavorite("1");
+      await storeService.toggleFavorite("2");
+
+      await expect(storeService.fetchFavorites()).rejects.toThrow(
+        `Request failed (404): ${BASE_URL}/stores/2`,
+      );
+    });
+  });
 });

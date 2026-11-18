@@ -8,9 +8,6 @@ export const styles = StyleSheet.create({
     padding: 8,
     gap: 16,
   },
-  listContent: {
-    gap: 16,
-  },
   searchInput: {
     borderWidth: 1,
     borderColor: "gray",

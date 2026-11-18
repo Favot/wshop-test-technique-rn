@@ -10,4 +10,5 @@ export type StoresServiceType = {
   fetchStoreById: (id: string) => Promise<StoresModel>;
   toggleFavorite: (id: string) => Promise<void>;
   isFavorite: (id: string) => Promise<boolean>;
+  fetchFavorites: () => Promise<StoresModel[]>;
 };
