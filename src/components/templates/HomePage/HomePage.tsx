@@ -1,5 +1,5 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
-import { useState } from "react";
+import { useCallback, useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
@@ -23,11 +23,26 @@ const renderItem = ({ item }: ListRenderItemInfo<StoresModel>) => (
 export const HomePage = () => {
   const [name, setName] = useState("");
 
-  const { data: stores, isPending } = useQuery({
+  const [isRefreshing, setIsRefreshing] = useState(false);
+
+  const {
+    data: stores,
+    isPending,
+    refetch,
+  } = useQuery({
     queryKey: ["stores", name],
     queryFn: () => getServiceRegistry().storesService.fetchStores(name),
     placeholderData: keepPreviousData,
   });
+
+  const handleRefresh = useCallback(async () => {
+    setIsRefreshing(true);
+    try {
+      await refetch();
+    } finally {
+      setIsRefreshing(false);
+    }
+  }, [refetch]);
 
   return (
     <SafeAreaView style={styles.safeArea}>
@@ -47,6 +62,8 @@ export const HomePage = () => {
             data={stores}
             keyExtractor={keyExtractor}
             renderItem={renderItem}
+            refreshing={isRefreshing}
+            onRefresh={handleRefresh}
             initialNumToRender={10}
             maxToRenderPerBatch={10}
             updateCellsBatchingPeriod={50}

@@ -1,7 +1,13 @@
 import { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, userEvent, waitFor } from "@testing-library/react-native";
+import {
+  act,
+  fireEvent,
+  render,
+  userEvent,
+  waitFor,
+} from "@testing-library/react-native";
 
 import { HomePage } from "./HomePage";
 
@@ -128,6 +134,58 @@ describe("HomePage", () => {
 
       expect(await findByText("Store 12")).toBeOnTheScreen();
       await waitFor(() => expect(queryByText("Store 1")).not.toBeOnTheScreen());
+    });
+  });
+
+  describe("refetch on pull to refresh", () => {
+    it("refetches the stores when the list is pulled down", async () => {
+      const fetchStores = jest.fn().mockResolvedValue(stores);
+
+      const { findByTestId } = await setup(fetchStores);
+      const list = await findByTestId("store-list");
+      expect(fetchStores).toHaveBeenCalledTimes(1);
+
+      await act(async () => {
+        fireEvent(list, "refresh");
+      });
+
+      await waitFor(() => expect(fetchStores).toHaveBeenCalledTimes(2));
+    });
+
+    it("refetches with the currently typed name", async () => {
+      const fetchStores = jest.fn().mockResolvedValue(stores);
+      const user = userEvent.setup();
+
+      const { findByTestId } = await setup(fetchStores);
+      await user.type(await findByTestId("search-input"), "Store 12");
+      await waitFor(() =>
+        expect(fetchStores).toHaveBeenLastCalledWith("Store 12"),
+      );
+      const callsBeforeRefresh = fetchStores.mock.calls.length;
+
+      await act(async () => {
+        fireEvent(await findByTestId("store-list"), "refresh");
+      });
+
+      await waitFor(() =>
+        expect(fetchStores).toHaveBeenCalledTimes(callsBeforeRefresh + 1),
+      );
+      expect(fetchStores).toHaveBeenLastCalledWith("Store 12");
+    });
+
+    it("keeps the stores displayed while refreshing", async () => {
+      const fetchStores = jest.fn().mockResolvedValue(stores);
+
+      const { findByTestId, findByText, queryByTestId } =
+        await setup(fetchStores);
+      const list = await findByTestId("store-list");
+
+      await act(async () => {
+        fireEvent(list, "refresh");
+      });
+
+      expect(await findByText("Store 1")).toBeOnTheScreen();
+      expect(queryByTestId("loader")).not.toBeOnTheScreen();
     });
   });
 });
