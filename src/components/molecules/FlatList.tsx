@@ -1,5 +1,12 @@
-import { useMemo, useState } from "react";
-import { FlatList, Image, StyleSheet, Text, View } from "react-native";
+import { memo, useMemo, useState } from "react";
+import {
+  FlatList,
+  Image,
+  ListRenderItemInfo,
+  StyleSheet,
+  Text,
+  View,
+} from "react-native";
 
 type Product = {
   id: string;
@@ -22,7 +29,7 @@ export const ProductList = ({ products }: { products: Product[] }) => {
     <FlatList
       data={filteredProducts}
       keyExtractor={keyExtractor}
-      renderItem={({ item }) => <ProductItem product={item} />}
+      renderItem={renderItem}
       initialNumToRender={10}
       maxToRenderPerBatch={10}
       updateCellsBatchingPeriod={50}
@@ -33,7 +40,11 @@ export const ProductList = ({ products }: { products: Product[] }) => {
   );
 };
 
-const ProductItem = ({ product }: { product: Product }) => {
+const ProductItem = memo(function ProductItem({
+  product,
+}: {
+  product: Product;
+}) {
   return (
     <View style={styles.container}>
       <Image source={{ uri: product.imageUrl }} style={styles.image} />
@@ -43,7 +54,11 @@ const ProductItem = ({ product }: { product: Product }) => {
       </View>
     </View>
   );
-};
+});
+
+const renderItem = ({ item }: ListRenderItemInfo<Product>) => (
+  <ProductItem product={item} />
+);
 
 const styles = StyleSheet.create({
   container: {
