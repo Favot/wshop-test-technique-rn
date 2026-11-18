@@ -1,6 +1,15 @@
-# Welcome to your Expo app 👋
+# Welcome to the WShop Technical Test — React Native Developer
 
-This is an [Expo](https://expo.dev) project created with [`create-expo-app`](https://www.npmjs.com/package/create-expo-app).
+## Introduction
+
+- **Developer:** Corentin Favot
+- **Date:** 18/11/2026
+
+This repository contains the full implementation of the technical test for the React Native developer position.
+
+## Exercises
+
+Each exercise is linked to a pull request, with more detail and context on how I solved it.
 
 ## Get started
 
