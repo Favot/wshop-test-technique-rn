@@ -1,8 +1,7 @@
-import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
-import { render, waitFor } from "@testing-library/react-native";
-
 import { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
+import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
+import { render, waitFor } from "@testing-library/react-native";
 
 import { HomePage } from "./HomePage";
 
