@@ -3,6 +3,7 @@ import { useState } from "react";
 import {
   ActivityIndicator,
   FlatList,
+  ListRenderItemInfo,
   StyleSheet,
   TextInput,
   View,
@@ -10,7 +11,14 @@ import {
 import { SafeAreaView } from "react-native-safe-area-context";
 
 import { StoresItem } from "@/components/molecules";
+import type { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
+
+const keyExtractor = (store: StoresModel): string => store.id;
+
+const renderItem = ({ item }: ListRenderItemInfo<StoresModel>) => (
+  <StoresItem store={item} />
+);
 
 export const HomePage = () => {
   const [name, setName] = useState("");
@@ -37,8 +45,13 @@ export const HomePage = () => {
           <FlatList
             testID="store-list"
             data={stores}
-            keyExtractor={(store) => store.id}
-            renderItem={({ item }) => <StoresItem store={item} />}
+            keyExtractor={keyExtractor}
+            renderItem={renderItem}
+            initialNumToRender={10}
+            maxToRenderPerBatch={10}
+            updateCellsBatchingPeriod={50}
+            windowSize={7}
+            contentContainerStyle={styles.listContent}
           />
         )}
       </View>
@@ -53,6 +66,9 @@ const styles = StyleSheet.create({
   container: {
     flex: 1,
     padding: 16,
+  },
+  listContent: {
+    gap: 16,
   },
   searchInput: {
     borderWidth: 1,
