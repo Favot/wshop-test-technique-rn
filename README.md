@@ -28,7 +28,13 @@ Each exercise is linked to a pull request, with more detail and context on how I
    npm install
    ```
 
-2. Start the app
+2. Start the server
+
+   ```bash
+   npm run server:start
+   ```
+
+3. Start the app
 
    ```bash
    npx expo start
