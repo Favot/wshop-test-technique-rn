@@ -72,8 +72,9 @@ describe("CardStore", () => {
 
       const { name, storage } = useCartStore.persist.getOptions();
       const stored = await storage?.getItem(name as string);
+      const state = stored?.state as { items: unknown[] } | undefined;
 
-      expect(stored?.state.items).toEqual([{ ...apple, quantity: 1 }]);
+      expect(state?.items).toEqual([{ ...apple, quantity: 1 }]);
     });
 
     it("rehydrates the items from storage", async () => {

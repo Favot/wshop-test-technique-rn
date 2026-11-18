@@ -1,5 +1,6 @@
+import AsyncStorage from "@react-native-async-storage/async-storage";
 import { create } from "zustand";
-import { persist } from "zustand/middleware";
+import { createJSONStorage, persist } from "zustand/middleware";
 
 export type CartProduct = {
   id: string;
@@ -18,14 +19,30 @@ type CartState = {
 
 export const useCartStore = create<CartState>()(
   persist(
-    (_set, _get): CartState => ({
+    (set): CartState => ({
       items: [],
-      addItem: () => {},
+      addItem: (product) => {
+        set((state) => {
+          const exists = state.items.some((item) => item.id === product.id);
+
+          return {
+            items: exists
+              ? state.items.map((item) =>
+                  item.id === product.id
+                    ? { ...item, quantity: item.quantity + 1 }
+                    : item,
+                )
+              : [...state.items, { ...product, quantity: 1 }],
+          };
+        });
+      },
       removeItem: () => {},
       updateQuantity: () => {},
     }),
     {
       name: "cart",
+      storage: createJSONStorage(() => AsyncStorage),
+      partialize: ({ items }) => ({ items }),
     },
   ),
 );
