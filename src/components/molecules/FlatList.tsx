@@ -1,4 +1,4 @@
-import { useState } from 'react'
+import { useMemo, useState } from 'react'
 import { FlatList, Image, Text, View } from 'react-native'
 
 type Product = {
@@ -22,9 +22,12 @@ const ProductItem = ({ product }: { product: Product }) => {
 
 export const ProductList = ({ products }: { products: Product[] }) => {
     const [filter, setFilter] = useState('')
+
+    const filteredProducts = useMemo(() => products.filter(p => p.name.includes(filter)), [products, filter])
+
     return (
         <FlatList
-            data={products.filter(p => p.name.includes(filter))}
+            data={filteredProducts}
             renderItem={({ item }) => <ProductItem product={item} />}
             onEndReached={() => console.log('end')}
         />
