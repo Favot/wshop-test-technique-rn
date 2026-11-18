@@ -1,3 +1,4 @@
+import { StoreMap } from "@/components/molecules";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
@@ -41,6 +42,7 @@ export const StoreDetailPage = ({ id }: StoreDetailPageProps) => {
           <Text style={styles.name}>{store.name}</Text>
           <Text style={styles.text}>{store.address}</Text>
           <Text style={styles.text}>{store.phone}</Text>
+          <StoreMap name={store.name} location={store.location} />
         </View>
       )}
     </SafeAreaView>

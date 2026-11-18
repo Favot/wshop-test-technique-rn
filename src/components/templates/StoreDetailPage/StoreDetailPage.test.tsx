@@ -7,6 +7,16 @@ import { StoreDetailPage } from "./StoreDetailPage";
 
 jest.mock("@/gateway/serviceRegistry");
 
+const mockRenderMap = jest.fn();
+jest.mock("expo-maps", () => {
+  const { View } = jest.requireActual("react-native");
+  const MapView = (props: object) => {
+    mockRenderMap(props);
+    return <View testID="store-map" />;
+  };
+  return { AppleMaps: { View: MapView }, GoogleMaps: { View: MapView } };
+});
+
 const store: StoresModel = {
   id: "1",
   name: "Boutique République",
@@ -98,6 +108,32 @@ describe("StoreDetailPage", () => {
       expect(getByText(store.address)).toBeOnTheScreen();
       expect(getByText(store.phone)).toBeOnTheScreen();
       expect(await findByTestId(`store-image-${store.id}`)).toBeOnTheScreen();
+    });
+  });
+
+  describe("map", () => {
+    it("centers the map on the store and adds a marker with its name", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByTestId } = await setup(fetchStoreById);
+
+      expect(await findByTestId("store-map")).toBeOnTheScreen();
+      expect(mockRenderMap).toHaveBeenLastCalledWith(
+        expect.objectContaining({
+          cameraPosition: expect.objectContaining({
+            coordinates: store.location,
+          }),
+          markers: [{ coordinates: store.location, title: store.name }],
+        }),
+      );
+    });
+
+    it("does not render the map while the store is loading", async () => {
+      const neverResolves = jest.fn().mockReturnValue(new Promise(() => {}));
+
+      const { queryByTestId } = await setup(neverResolves);
+
+      expect(queryByTestId("store-map")).not.toBeOnTheScreen();
     });
   });
 
