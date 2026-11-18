@@ -58,7 +58,8 @@
     "lint:fix": "expo lint --fix",
     "lint:check": "expo lint",
     "format": "prettier --write .",
-    "format:check": "prettier --check ."
+    "format:check": "prettier --check .",
+    "server:start": "json-server --watch db.json --port 3001"
   },
   "jest": {
     "preset": "jest-expo",
