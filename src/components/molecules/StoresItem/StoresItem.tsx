@@ -1,8 +1,8 @@
+import type { StoresModel } from "@/domain/stores/StoresModel";
 import { Image } from "expo-image";
 import { memo } from "react";
-import { StyleSheet, Text, View } from "react-native";
-
-import type { StoresModel } from "@/domain/stores/StoresModel";
+import { Text, View } from "react-native";
+import { styles } from "./styles";
 
 type StoresItemProps = {
   store: StoresModel;
@@ -21,23 +21,4 @@ export const StoresItem = memo(function StoresItem({ store }: StoresItemProps) {
       <Text style={styles.text}>{store.phone}</Text>
     </View>
   );
-});
-
-const styles = StyleSheet.create({
-  container: {
-    flex: 1,
-    padding: 16,
-    borderWidth: 1,
-    borderColor: "gray",
-    borderRadius: 8,
-  },
-  image: {
-    width: "100%",
-    height: 150,
-  },
-  text: {
-    fontSize: 16,
-    fontWeight: "bold",
-    color: "black",
-  },
 });
