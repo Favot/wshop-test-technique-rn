@@ -10,7 +10,7 @@ type StoresItemProps = {
 
 export const StoresItem = memo(function StoresItem({ store }: StoresItemProps) {
   return (
-    <View>
+    <View style={styles.container}>
       <Image
         testID={`store-image-${store.id}`}
         source={{ uri: store.imageUrl }}
@@ -24,6 +24,13 @@ export const StoresItem = memo(function StoresItem({ store }: StoresItemProps) {
 });
 
 const styles = StyleSheet.create({
+  container: {
+    flex: 1,
+    padding: 16,
+    borderWidth: 1,
+    borderColor: "gray",
+    borderRadius: 8,
+  },
   image: {
     width: "100%",
     height: 150,
