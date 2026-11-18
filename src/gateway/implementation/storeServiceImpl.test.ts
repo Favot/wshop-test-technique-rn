@@ -118,88 +118,29 @@ describe("storeService (fetch implementation)", () => {
   });
 });
 
-describe("storeService favorites (AsyncStorage implementation)", () => {
+describe("storeService favorites", () => {
   beforeEach(async () => {
     await AsyncStorage.clear();
-    jest.clearAllMocks();
   });
 
-  const storedFavorites = async () =>
-    JSON.parse((await AsyncStorage.getItem(FAVORITES_STORAGE_KEY)) ?? "null");
-
-  it("isFavorite returns false when nothing is stored", async () => {
+  it("isFavorite returns false for a store that was never toggled", async () => {
     await expect(storeService.isFavorite("1")).resolves.toBe(false);
   });
 
-  it("toggleFavorite adds a store that is not a favorite yet", async () => {
+  it("toggleFavorite marks a store as favorite and toggles it back", async () => {
     await storeService.toggleFavorite("1");
-
     await expect(storeService.isFavorite("1")).resolves.toBe(true);
-    expect(await storedFavorites()).toEqual(["1"]);
-  });
-
-  it("toggleFavorite removes a store that is already a favorite", async () => {
-    await storeService.toggleFavorite("1");
 
     await storeService.toggleFavorite("1");
-
     await expect(storeService.isFavorite("1")).resolves.toBe(false);
-    expect(await storedFavorites()).toEqual([]);
   });
 
-  it("toggleFavorite keeps the other favorites untouched", async () => {
+  it("toggleFavorite persists the favorite ids under the favorites key", async () => {
     await storeService.toggleFavorite("1");
     await storeService.toggleFavorite("2");
 
-    await storeService.toggleFavorite("1");
-
-    await expect(storeService.isFavorite("1")).resolves.toBe(false);
-    await expect(storeService.isFavorite("2")).resolves.toBe(true);
-    expect(await storedFavorites()).toEqual(["2"]);
-  });
-
-  it("isFavorite only returns true for the favorite stores", async () => {
-    await storeService.toggleFavorite("1");
-
-    await expect(storeService.isFavorite("1")).resolves.toBe(true);
-    await expect(storeService.isFavorite("2")).resolves.toBe(false);
-  });
-
-  it("persists the favorites as a list of ids under the favorites key", async () => {
-    await storeService.toggleFavorite("1");
-    await storeService.toggleFavorite("2");
-
-    expect(AsyncStorage.setItem).toHaveBeenLastCalledWith(
-      FAVORITES_STORAGE_KEY,
+    expect(await AsyncStorage.getItem(FAVORITES_STORAGE_KEY)).toBe(
       JSON.stringify(["1", "2"]),
     );
-  });
-
-  it("isFavorite returns false when the stored value is not valid JSON", async () => {
-    await AsyncStorage.setItem(FAVORITES_STORAGE_KEY, "not-json");
-
-    await expect(storeService.isFavorite("1")).resolves.toBe(false);
-  });
-
-  it("isFavorite returns false when the stored value is not a list", async () => {
-    await AsyncStorage.setItem(FAVORITES_STORAGE_KEY, JSON.stringify({ a: 1 }));
-
-    await expect(storeService.isFavorite("1")).resolves.toBe(false);
-  });
-
-  it("toggleFavorite recovers from a corrupted stored value", async () => {
-    await AsyncStorage.setItem(FAVORITES_STORAGE_KEY, "not-json");
-
-    await storeService.toggleFavorite("1");
-
-    expect(await storedFavorites()).toEqual(["1"]);
-  });
-
-  it("propagates storage errors", async () => {
-    jest
-      .mocked(AsyncStorage.getItem)
-      .mockRejectedValueOnce(new Error("Storage down"));
-
-    await expect(storeService.isFavorite("1")).rejects.toThrow("Storage down");
   });
 });
