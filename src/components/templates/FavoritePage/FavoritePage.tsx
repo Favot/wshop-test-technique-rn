@@ -1,25 +1,11 @@
 import { keepPreviousData, useQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItemInfo,
-  Text,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, Text, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StoresItem } from "@/components/molecules";
-import type { StoresModel } from "@/domain/stores/StoresModel";
+import { StoreList } from "@/components/organisms";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { styles } from "./style";
-
-const keyExtractor = (store: StoresModel): string => store.id;
-
-const renderItem = ({ item }: ListRenderItemInfo<StoresModel>) => (
-  <StoresItem store={item} />
-);
 
 const EmptyFavorites = () => (
   <View testID="empty-favorites" style={styles.emptyContainer}>
@@ -73,19 +59,11 @@ export const FavoritePage = () => {
         {isPending ? (
           <ActivityIndicator testID="loader" />
         ) : (
-          <FlatList
-            testID="store-list"
-            data={stores}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            refreshing={isRefreshing}
+          <StoreList
+            stores={stores}
+            isRefreshing={isRefreshing}
             onRefresh={handleRefresh}
             ListEmptyComponent={hasNoFavorites ? <EmptyFavorites /> : undefined}
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            updateCellsBatchingPeriod={50}
-            windowSize={7}
-            contentContainerStyle={styles.listContent}
           />
         )}
       </View>

@@ -1,24 +1,11 @@
 import { keepPreviousData, useInfiniteQuery } from "@tanstack/react-query";
 import { useCallback, useMemo, useState } from "react";
-import {
-  ActivityIndicator,
-  FlatList,
-  ListRenderItemInfo,
-  TextInput,
-  View,
-} from "react-native";
+import { ActivityIndicator, TextInput, View } from "react-native";
 import { SafeAreaView } from "react-native-safe-area-context";
 
-import { StoresItem } from "@/components/molecules";
-import type { StoresModel } from "@/domain/stores/StoresModel";
+import { StoreList } from "@/components/organisms";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { styles } from "./style";
-
-const keyExtractor = (store: StoresModel): string => store.id;
-
-const renderItem = ({ item }: ListRenderItemInfo<StoresModel>) => (
-  <StoresItem store={item} />
-);
 
 export const HomePage = () => {
   const [name, setName] = useState("");
@@ -74,25 +61,12 @@ export const HomePage = () => {
         {isPending ? (
           <ActivityIndicator testID="loader" />
         ) : (
-          <FlatList
-            testID="store-list"
-            data={stores}
-            keyExtractor={keyExtractor}
-            renderItem={renderItem}
-            refreshing={isRefreshing}
+          <StoreList
+            stores={stores}
+            isRefreshing={isRefreshing}
             onRefresh={handleRefresh}
             onEndReached={handleEndReached}
-            onEndReachedThreshold={0.5}
-            ListFooterComponent={
-              isFetchingNextPage ? (
-                <ActivityIndicator testID="next-page-loader" />
-              ) : undefined
-            }
-            initialNumToRender={10}
-            maxToRenderPerBatch={10}
-            updateCellsBatchingPeriod={50}
-            windowSize={7}
-            contentContainerStyle={styles.listContent}
+            isFetchingNextPage={isFetchingNextPage}
           />
         )}
       </View>
