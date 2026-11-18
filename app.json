@@ -8,7 +8,8 @@
     "scheme": "wshoptesttechniquern",
     "userInterfaceStyle": "automatic",
     "ios": {
-      "icon": "./assets/expo.icon"
+      "icon": "./assets/expo.icon",
+      "bundleIdentifier": "com.favot.wshop-test-technique-rn"
     },
     "android": {
       "adaptiveIcon": {
