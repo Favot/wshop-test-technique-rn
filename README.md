@@ -23,6 +23,7 @@ Each exercise is linked to a pull request, with more detail and context on how I
 - Part 3:
   - Stores List: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/8)
   - Store Detail: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/9)
+  - Favorites List: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/10)
 
 ## Get started
 
