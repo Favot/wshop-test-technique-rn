@@ -1,5 +1,5 @@
 import { StoresServiceType } from "@/domain/stores/StoresService";
-import { storeService } from "./implementation/storeServiceFetchImpl";
+import { storeService } from "./implementation/storeServiceImpl";
 
 type ServiceRegistry = {
   storesService: StoresServiceType;

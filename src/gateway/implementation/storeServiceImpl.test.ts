@@ -1,4 +1,4 @@
-import { storeService } from "./storeServiceFetchImpl";
+import { storeService } from "./storeServiceImpl";
 
 const BASE_URL = "http://localhost:3001";
 const PAGINATION = "_page=1&_per_page=5";
