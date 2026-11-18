@@ -36,7 +36,11 @@ export const useCartStore = create<CartState>()(
           };
         });
       },
-      removeItem: () => {},
+      removeItem: (id) => {
+        set((state) => ({
+          items: state.items.filter((item) => item.id !== id),
+        }));
+      },
       updateQuantity: () => {},
     }),
     {
