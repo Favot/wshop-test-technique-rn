@@ -62,6 +62,7 @@ const setup = async (fetchStores: jest.Mock) => {
       fetchStoreById: jest.fn(),
       toggleFavorite: jest.fn(),
       isFavorite: jest.fn(),
+      fetchFavorites: jest.fn(),
     },
   });
 

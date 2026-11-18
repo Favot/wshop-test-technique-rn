@@ -70,6 +70,7 @@ const setup = async (
       fetchStoreById,
       toggleFavorite: favorites.toggleFavorite,
       isFavorite: favorites.isFavorite,
+      fetchFavorites: jest.fn(),
     },
   });
 
