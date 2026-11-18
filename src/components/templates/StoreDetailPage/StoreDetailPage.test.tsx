@@ -285,9 +285,7 @@ describe("StoreDetailPage", () => {
       const fetchStoreById = jest.fn().mockResolvedValue(store);
       const favorites = createFavoritesFake([store.id]);
 
-      const { findByRole, getByRole } = await setup(fetchStoreById, {
-        favorites,
-      });
+      const { getByRole } = await setup(fetchStoreById, { favorites });
 
       await waitFor(() => expect(getByRole("button", FAVORI)).toBeSelected());
     });
