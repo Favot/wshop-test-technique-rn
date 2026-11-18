@@ -6,6 +6,7 @@ import {
   fetchJson,
   hasStringListItem,
   PaginatedResponse,
+  readStringList,
   toggleStringListItem,
 } from "../infrastructure";
 
@@ -30,4 +31,10 @@ export const storeService: StoresServiceType = {
   toggleFavorite: (id: string) =>
     toggleStringListItem(FAVORITES_STORAGE_KEY, id),
   isFavorite: (id: string) => hasStringListItem(FAVORITES_STORAGE_KEY, id),
+  fetchFavorites: async () => {
+    const favorites = await readStringList(FAVORITES_STORAGE_KEY);
+    return Promise.all(
+      favorites.map((id) => fetchJson<StoresModel>(`${BASE_URL}/stores/${id}`)),
+    );
+  },
 };
