@@ -1,6 +1,7 @@
 import { storeService } from "./storeServiceFetchImpl";
 
 const BASE_URL = "http://localhost:3001";
+const PAGINATION = "_page=1&_per_page=5";
 
 const mockFetch = (data: unknown, { ok = true, status = 200 } = {}) => {
   const fetchMock = jest
@@ -10,48 +11,74 @@ const mockFetch = (data: unknown, { ok = true, status = 200 } = {}) => {
   return fetchMock;
 };
 
+const paginated = (data: unknown[] = [], next: number | null = null) => ({
+  data,
+  next,
+});
+
 describe("storeService (fetch implementation)", () => {
-  it("fetchStores calls the /stores endpoint", async () => {
-    const fetchMock = mockFetch([]);
+  it("fetchStores calls the /stores endpoint with the first page of 5 items", async () => {
+    const fetchMock = mockFetch(paginated());
 
     await storeService.fetchStores();
 
-    expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores`);
+    expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores?${PAGINATION}`);
+  });
+
+  it("fetchStores requests the given page", async () => {
+    const fetchMock = mockFetch(paginated());
+
+    await storeService.fetchStores(undefined, 3);
+
+    expect(fetchMock).toHaveBeenCalledWith(
+      `${BASE_URL}/stores?_page=3&_per_page=5`,
+    );
   });
 
   it("fetchStores filters by name using the json-server `contains` operator", async () => {
-    const fetchMock = mockFetch([]);
+    const fetchMock = mockFetch(paginated());
 
     await storeService.fetchStores("Paris");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      `${BASE_URL}/stores?name:contains=Paris`,
+      `${BASE_URL}/stores?name:contains=Paris&${PAGINATION}`,
     );
   });
 
   it("fetchStores url-encodes the name filter", async () => {
-    const fetchMock = mockFetch([]);
+    const fetchMock = mockFetch(paginated());
 
     await storeService.fetchStores("Rép & Co");
 
     expect(fetchMock).toHaveBeenCalledWith(
-      `${BASE_URL}/stores?name:contains=${encodeURIComponent("Rép & Co")}`,
+      `${BASE_URL}/stores?name:contains=${encodeURIComponent("Rép & Co")}&${PAGINATION}`,
     );
   });
 
   it("fetchStores does not add a filter when the name is empty", async () => {
-    const fetchMock = mockFetch([]);
+    const fetchMock = mockFetch(paginated());
 
     await storeService.fetchStores("");
 
-    expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores`);
+    expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores?${PAGINATION}`);
   });
 
-  it("fetchStores returns the parsed stores", async () => {
+  it("fetchStores returns the stores of the page and the next page", async () => {
     const stores = [{ id: "1", name: "Store 1" }];
-    mockFetch(stores);
+    mockFetch(paginated(stores, 2));
 
-    await expect(storeService.fetchStores()).resolves.toEqual(stores);
+    await expect(storeService.fetchStores()).resolves.toEqual({
+      stores,
+      nextPage: 2,
+    });
+  });
+
+  it("fetchStores returns a null nextPage on the last page", async () => {
+    mockFetch(paginated([{ id: "1", name: "Store 1" }], null));
+
+    await expect(storeService.fetchStores()).resolves.toMatchObject({
+      nextPage: null,
+    });
   });
 
   it("fetchStoreById calls /stores/:id and returns the store", async () => {
@@ -68,7 +95,7 @@ describe("storeService (fetch implementation)", () => {
     mockFetch(null, { ok: false, status: 500 });
 
     await expect(storeService.fetchStores()).rejects.toThrow(
-      `Request failed (500): ${BASE_URL}/stores`,
+      `Request failed (500): ${BASE_URL}/stores?${PAGINATION}`,
     );
   });
 
