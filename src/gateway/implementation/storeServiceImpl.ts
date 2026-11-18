@@ -1,15 +1,13 @@
 import { StoresModel } from "@/domain/stores/StoresModel";
 import { StoresServiceType } from "@/domain/stores/StoresService";
 import {
-  hasStringListItem,
-  toggleStringListItem,
-} from "../infrastructure/asyncStorage";
-import {
   BASE_URL,
   buildPaginatedQuery,
   fetchJson,
+  hasStringListItem,
   PaginatedResponse,
-} from "../infrastructure/fetch";
+  toggleStringListItem,
+} from "../infrastructure";
 
 export const STORES_PAGE_SIZE = 5;
 export const FAVORITES_STORAGE_KEY = "favorites";
