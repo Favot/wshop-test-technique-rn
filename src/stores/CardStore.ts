@@ -1,4 +1,5 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
+import { createSelector } from "reselect";
 import { create } from "zustand";
 import { createJSONStorage, persist } from "zustand/middleware";
 
@@ -60,5 +61,8 @@ export const useCartStore = create<CartState>()(
   ),
 );
 
-export const selectCartTotal = (state: CartState): number =>
-  state.items.reduce((total, item) => total + item.price * item.quantity, 0);
+export const selectCartTotal = createSelector(
+  [(state: CartState) => state.items],
+  (items) =>
+    items.reduce((total, item) => total + item.price * item.quantity, 0),
+);
