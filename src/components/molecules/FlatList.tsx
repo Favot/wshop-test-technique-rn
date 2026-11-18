@@ -1,7 +1,14 @@
 import { useState } from 'react'
 import { FlatList, Image, Text, View } from 'react-native'
 
-export const ProductList = ({ products }) => {
+type Product = {
+    id: string
+    name: string
+    price: number
+    imageUrl: string
+}
+
+export const ProductList = ({ products }: { products: Product[] }) => {
     const [filter, setFilter] = useState('')
     return (
         <FlatList
