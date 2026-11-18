@@ -1,6 +1,6 @@
 import { OpeningHours, StoreMap } from "@/components/molecules";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
-import { useQuery } from "@tanstack/react-query";
+import { useMutation, useQuery, useQueryClient } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import {
   ActivityIndicator,
@@ -14,10 +14,6 @@ import { styles } from "./style";
 
 const SAFE_AREA_EDGES: Edge[] = ["left", "right", "bottom"];
 
-const handleFavoritePress = () => {
-  throw new Error("Not implemented yet");
-};
-
 type StoreDetailPageProps = {
   id: string;
 };
@@ -30,6 +26,20 @@ export const StoreDetailPage = ({ id }: StoreDetailPageProps) => {
   } = useQuery({
     queryKey: ["store", id],
     queryFn: () => getServiceRegistry().storesService.fetchStoreById(id),
+  });
+
+  const queryClient = useQueryClient();
+  const favoriteQueryKey = ["favorite", id];
+
+  const { data: isFavorite = false } = useQuery({
+    queryKey: favoriteQueryKey,
+    queryFn: () => getServiceRegistry().storesService.isFavorite(id),
+  });
+
+  const { mutate: toggleFavorite } = useMutation({
+    mutationFn: () => getServiceRegistry().storesService.toggleFavorite(id),
+    onSuccess: () =>
+      queryClient.invalidateQueries({ queryKey: favoriteQueryKey }),
   });
 
   return (
@@ -55,10 +65,21 @@ export const StoreDetailPage = ({ id }: StoreDetailPageProps) => {
           <Pressable
             testID="favorite-button"
             accessibilityRole="button"
-            style={styles.favoriteButton}
-            onPress={handleFavoritePress}
+            accessibilityState={{ selected: isFavorite }}
+            style={[
+              styles.favoriteButton,
+              isFavorite && styles.favoriteButtonActive,
+            ]}
+            onPress={() => toggleFavorite()}
           >
-            <Text style={styles.favoriteButtonText}>Favori</Text>
+            <Text
+              style={[
+                styles.favoriteButtonText,
+                isFavorite && styles.favoriteButtonTextActive,
+              ]}
+            >
+              Favori
+            </Text>
           </Pressable>
           <Text style={styles.text}>{store.address}</Text>
           <Text style={styles.text}>{store.phone}</Text>

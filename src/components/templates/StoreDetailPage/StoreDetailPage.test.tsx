@@ -2,6 +2,7 @@ import { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { QueryClient, QueryClientProvider } from "@tanstack/react-query";
 import {
+  act,
   cleanup,
   fireEvent,
   render,
@@ -43,13 +44,32 @@ const store: StoresModel = {
 
 const queryClients: QueryClient[] = [];
 
-const setup = async (fetchStoreById: jest.Mock, id = store.id) => {
+const createFavoritesFake = (initialFavorites: string[] = []) => {
+  const favorites = new Set(initialFavorites);
+  return {
+    isFavorite: jest.fn(async (id: string) => favorites.has(id)),
+    toggleFavorite: jest.fn(async (id: string) => {
+      if (favorites.has(id)) favorites.delete(id);
+      else favorites.add(id);
+    }),
+  };
+};
+
+type SetupOptions = {
+  id?: string;
+  favorites?: ReturnType<typeof createFavoritesFake>;
+};
+
+const setup = async (
+  fetchStoreById: jest.Mock,
+  { id = store.id, favorites = createFavoritesFake() }: SetupOptions = {},
+) => {
   jest.mocked(getServiceRegistry).mockReturnValue({
     storesService: {
       fetchStores: jest.fn(),
       fetchStoreById,
-      toggleFavorite: jest.fn(),
-      isFavorite: jest.fn(),
+      toggleFavorite: favorites.toggleFavorite,
+      isFavorite: favorites.isFavorite,
     },
   });
 
@@ -64,13 +84,18 @@ const setup = async (fetchStoreById: jest.Mock, id = store.id) => {
     </QueryClientProvider>,
   );
 
-  return { fetchStoreById, ...utils };
+  return { fetchStoreById, favorites, ...utils };
 };
 
 describe("StoreDetailPage", () => {
   afterEach(async () => {
-    cleanup();
     await Promise.all(queryClients.map((client) => client.cancelQueries()));
+    // Let react-query flush its batched notifications while the tree is still
+    // mounted, so no update lands outside of act() after the test is over.
+    await act(async () => {
+      await new Promise((resolve) => setTimeout(resolve, 0));
+    });
+    cleanup();
     queryClients.splice(0).forEach((client) => client.clear());
     jest.resetAllMocks();
   });
@@ -92,7 +117,7 @@ describe("StoreDetailPage", () => {
     it("fetches the store matching the given id", async () => {
       const fetchStoreById = jest.fn().mockResolvedValue(store);
 
-      await setup(fetchStoreById, "1");
+      await setup(fetchStoreById, { id: "1" });
 
       await waitFor(() => expect(fetchStoreById).toHaveBeenCalledTimes(1));
       expect(fetchStoreById).toHaveBeenCalledWith("1");
@@ -220,12 +245,14 @@ describe("StoreDetailPage", () => {
   });
 
   describe("favorite button", () => {
+    const FAVORI = { name: "Favori" };
+
     it("displays a Favori button once the store is fetched", async () => {
       const fetchStoreById = jest.fn().mockResolvedValue(store);
 
       const { findByRole } = await setup(fetchStoreById);
 
-      expect(await findByRole("button", { name: "Favori" })).toBeOnTheScreen();
+      expect(await findByRole("button", FAVORI)).toBeOnTheScreen();
     });
 
     it("does not display the Favori button while the store is loading", async () => {
@@ -233,17 +260,84 @@ describe("StoreDetailPage", () => {
 
       const { queryByRole } = await setup(neverResolves);
 
-      expect(queryByRole("button", { name: "Favori" })).not.toBeOnTheScreen();
+      expect(queryByRole("button", FAVORI)).not.toBeOnTheScreen();
     });
 
-    it("throws a not implemented error when pressed", async () => {
+    it("checks whether the store is a favorite", async () => {
       const fetchStoreById = jest.fn().mockResolvedValue(store);
-      const { findByRole } = await setup(fetchStoreById);
-      const button = await findByRole("button", { name: "Favori" });
 
-      await expect(fireEvent.press(button)).rejects.toThrow(
-        "Not implemented yet",
+      const { favorites } = await setup(fetchStoreById, { id: "1" });
+
+      await waitFor(() =>
+        expect(favorites.isFavorite).toHaveBeenCalledWith("1"),
       );
+    });
+
+    it("is not selected when the store is not a favorite", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByRole } = await setup(fetchStoreById);
+
+      expect(await findByRole("button", FAVORI)).not.toBeSelected();
+    });
+
+    it("is selected when the store is already a favorite", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+      const favorites = createFavoritesFake([store.id]);
+
+      const { findByRole, getByRole } = await setup(fetchStoreById, {
+        favorites,
+      });
+
+      await waitFor(() => expect(getByRole("button", FAVORI)).toBeSelected());
+    });
+
+    it("toggles the favorite of the store when pressed", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByRole, favorites } = await setup(fetchStoreById);
+      fireEvent.press(await findByRole("button", FAVORI));
+
+      await waitFor(() =>
+        expect(favorites.toggleFavorite).toHaveBeenCalledWith(store.id),
+      );
+      expect(favorites.toggleFavorite).toHaveBeenCalledTimes(1);
+    });
+
+    it("becomes selected once the store has been added to the favorites", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+
+      const { findByRole, getByRole } = await setup(fetchStoreById);
+      fireEvent.press(await findByRole("button", FAVORI));
+
+      await waitFor(() => expect(getByRole("button", FAVORI)).toBeSelected());
+    });
+
+    it("becomes unselected once the store has been removed from the favorites", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+      const favorites = createFavoritesFake([store.id]);
+
+      const { findByRole, getByRole } = await setup(fetchStoreById, {
+        favorites,
+      });
+      await waitFor(() => expect(getByRole("button", FAVORI)).toBeSelected());
+      fireEvent.press(await findByRole("button", FAVORI));
+
+      await waitFor(() =>
+        expect(getByRole("button", FAVORI)).not.toBeSelected(),
+      );
+    });
+
+    it("stays unselected when toggling the favorite fails", async () => {
+      const fetchStoreById = jest.fn().mockResolvedValue(store);
+      const favorites = createFavoritesFake();
+      favorites.toggleFavorite.mockRejectedValue(new Error("Storage down"));
+
+      const { findByRole } = await setup(fetchStoreById, { favorites });
+      fireEvent.press(await findByRole("button", FAVORI));
+
+      await waitFor(() => expect(favorites.toggleFavorite).toHaveBeenCalled());
+      expect(await findByRole("button", FAVORI)).not.toBeSelected();
     });
   });
 

@@ -32,11 +32,19 @@ export const styles = StyleSheet.create({
     paddingVertical: 8,
     paddingHorizontal: 16,
     borderRadius: 8,
+    borderWidth: 1,
+    borderColor: "#208AEF",
+    backgroundColor: "white",
+  },
+  favoriteButtonActive: {
     backgroundColor: "#208AEF",
   },
   favoriteButtonText: {
     fontSize: 16,
     fontWeight: "bold",
+    color: "#208AEF",
+  },
+  favoriteButtonTextActive: {
     color: "white",
   },
 });
