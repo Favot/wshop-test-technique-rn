@@ -1,5 +1,5 @@
 import { useMemo, useState } from "react";
-import { FlatList, Image, Text, View } from "react-native";
+import { FlatList, Image, StyleSheet, Text, View } from "react-native";
 
 type Product = {
   id: string;
@@ -35,18 +35,34 @@ export const ProductList = ({ products }: { products: Product[] }) => {
 
 const ProductItem = ({ product }: { product: Product }) => {
   return (
-    <View style={{ flexDirection: "row", padding: 10 }}>
-      <Image
-        source={{ uri: product.imageUrl }}
-        style={{ width: 80, height: 80 }}
-      />
+    <View style={styles.container}>
+      <Image source={{ uri: product.imageUrl }} style={styles.image} />
       <View>
-        <Text style={{ fontSize: 16, fontWeight: "bold" }}>{product.name}</Text>
-        <Text>{product.price} €</Text>
+        <Text style={styles.name}>{product.name}</Text>
+        <Text style={styles.price}>{product.price} €</Text>
       </View>
     </View>
   );
 };
+
+const styles = StyleSheet.create({
+  container: {
+    flexDirection: "row",
+    padding: 10,
+  },
+  image: {
+    width: 80,
+    height: 80,
+  },
+  name: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+  price: {
+    fontSize: 16,
+    fontWeight: "bold",
+  },
+});
 
 const keyExtractor = (item: Product): string => item.id;
 
