@@ -20,6 +20,9 @@ Each exercise is linked to a pull request, with more detail and context on how I
   - Exercise 3: Redux Store: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/5)
   - Exercise 4: Unit tests: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/6)
 
+- Part 3:
+  - Stores List: [PR](https://github.com/Favot/wshop-test-technique-rn/pull/8)
+
 ## Get started
 
 1. Install dependencies
