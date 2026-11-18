@@ -23,6 +23,10 @@ export const ProductList = ({ products }: { products: Product[] }) => {
       data={filteredProducts}
       keyExtractor={keyExtractor}
       renderItem={({ item }) => <ProductItem product={item} />}
+      initialNumToRender={10}
+      maxToRenderPerBatch={10}
+      updateCellsBatchingPeriod={50}
+      windowSize={7}
       onEndReached={() => console.log("end")}
       getItemLayout={getItemLayout}
     />
