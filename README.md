@@ -41,8 +41,6 @@ Each exercise is linked to a pull request, with more detail and context on how I
 
 3. Build and start the app
 
-   The store detail screen uses `expo-maps`, which is not bundled in Expo Go, so the app has to run as a development build. The first run compiles the native project, so it takes a few minutes.
-
    ```bash
    npm run android
    ```
