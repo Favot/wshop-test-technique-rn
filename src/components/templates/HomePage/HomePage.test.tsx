@@ -57,7 +57,12 @@ const queryClients: QueryClient[] = [];
 
 const setup = async (fetchStores: jest.Mock) => {
   jest.mocked(getServiceRegistry).mockReturnValue({
-    storesService: { fetchStores, fetchStoreById: jest.fn() },
+    storesService: {
+      fetchStores,
+      fetchStoreById: jest.fn(),
+      toggleFavorite: jest.fn(),
+      isFavorite: jest.fn(),
+    },
   });
 
   const queryClient = new QueryClient({
