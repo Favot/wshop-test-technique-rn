@@ -15,12 +15,7 @@ import { getServiceRegistry } from "@/gateway/serviceRegistry";
 export const HomePage = () => {
   const [name, setName] = useState("");
 
-  const {
-    data: stores,
-    isPending,
-    error,
-    isError,
-  } = useQuery({
+  const { data: stores, isPending } = useQuery({
     queryKey: ["stores", name],
     queryFn: () => getServiceRegistry().storesService.fetchStores(name),
     placeholderData: keepPreviousData,
