@@ -3,8 +3,11 @@ import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { useQuery } from "@tanstack/react-query";
 import { Image } from "expo-image";
 import { ActivityIndicator, ScrollView, Text, View } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Edge, SafeAreaView } from "react-native-safe-area-context";
 import { styles } from "./style";
+
+// The stack header already handles the top inset.
+const SAFE_AREA_EDGES: Edge[] = ["left", "right", "bottom"];
 
 type StoreDetailPageProps = {
   id: string;
@@ -21,7 +24,7 @@ export const StoreDetailPage = ({ id }: StoreDetailPageProps) => {
   });
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={SAFE_AREA_EDGES}>
       {isPending ? (
         <View style={styles.center}>
           <ActivityIndicator testID="loader" />

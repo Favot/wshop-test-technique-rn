@@ -7,12 +7,15 @@ import {
   TextInput,
   View,
 } from "react-native";
-import { SafeAreaView } from "react-native-safe-area-context";
+import { Edge, SafeAreaView } from "react-native-safe-area-context";
 
 import { StoresItem } from "@/components/molecules";
 import type { StoresModel } from "@/domain/stores/StoresModel";
 import { getServiceRegistry } from "@/gateway/serviceRegistry";
 import { styles } from "./style";
+
+// The stack header already handles the top inset.
+const SAFE_AREA_EDGES: Edge[] = ["left", "right", "bottom"];
 
 const keyExtractor = (store: StoresModel): string => store.id;
 
@@ -62,7 +65,7 @@ export const HomePage = () => {
   }, [refetch]);
 
   return (
-    <SafeAreaView style={styles.safeArea}>
+    <SafeAreaView style={styles.safeArea} edges={SAFE_AREA_EDGES}>
       <View style={styles.container}>
         <TextInput
           testID="search-input"
