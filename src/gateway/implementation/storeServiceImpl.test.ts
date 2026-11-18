@@ -1,5 +1,6 @@
 import AsyncStorage from "@react-native-async-storage/async-storage";
 
+import { makeStoreDto, makeStoreModel } from "./storeDto.fixture";
 import { FAVORITES_STORAGE_KEY, storeService } from "./storeServiceImpl";
 
 const BASE_URL = "http://localhost:3001";
@@ -65,32 +66,31 @@ describe("storeService (fetch implementation)", () => {
     expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores?${PAGINATION}`);
   });
 
-  it("fetchStores returns the stores of the page and the next page", async () => {
-    const stores = [{ id: "1", name: "Store 1" }];
-    mockFetch(paginated(stores, 2));
+  it("fetchStores maps the stores of the page to the domain model and returns the next page", async () => {
+    mockFetch(paginated([makeStoreDto("1"), makeStoreDto("2")], 2));
 
     await expect(storeService.fetchStores()).resolves.toEqual({
-      stores,
+      stores: [makeStoreModel("1"), makeStoreModel("2")],
       nextPage: 2,
     });
   });
 
   it("fetchStores returns a null nextPage on the last page", async () => {
-    mockFetch(paginated([{ id: "1", name: "Store 1" }], null));
+    mockFetch(paginated([makeStoreDto("1")], null));
 
     await expect(storeService.fetchStores()).resolves.toMatchObject({
       nextPage: null,
     });
   });
 
-  it("fetchStoreById calls /stores/:id and returns the store", async () => {
-    const store = { id: "42", name: "Store 42" };
-    const fetchMock = mockFetch(store);
+  it("fetchStoreById calls /stores/:id and returns the mapped store", async () => {
+    const fetchMock = mockFetch(makeStoreDto("42"));
 
     const result = await storeService.fetchStoreById("42");
 
     expect(fetchMock).toHaveBeenCalledWith(`${BASE_URL}/stores/42`);
-    expect(result).toEqual(store);
+    expect(result).toEqual(makeStoreModel("42"));
+    expect(result.location).toEqual({ latitude: 48.8674, longitude: 2.3636 });
   });
 
   it("fetchStores throws when the response is not ok", async () => {
@@ -169,8 +169,8 @@ describe("storeService favorites", () => {
 
     it("fetches each favorite store by id", async () => {
       const fetchMock = mockFetchByUrl({
-        "1": { id: "1", name: "Store 1" },
-        "2": { id: "2", name: "Store 2" },
+        "1": makeStoreDto("1"),
+        "2": makeStoreDto("2"),
       });
       await storeService.toggleFavorite("1");
       await storeService.toggleFavorite("2");
@@ -184,35 +184,35 @@ describe("storeService favorites", () => {
 
     it("returns the favorite stores in the order they were favorited", async () => {
       mockFetchByUrl({
-        "1": { id: "1", name: "Store 1" },
-        "2": { id: "2", name: "Store 2" },
+        "1": makeStoreDto("1"),
+        "2": makeStoreDto("2"),
       });
       await storeService.toggleFavorite("2");
       await storeService.toggleFavorite("1");
 
       await expect(storeService.fetchFavorites()).resolves.toEqual([
-        { id: "2", name: "Store 2" },
-        { id: "1", name: "Store 1" },
+        makeStoreModel("2"),
+        makeStoreModel("1"),
       ]);
     });
 
     it("does not include a store that was un-favorited", async () => {
       const fetchMock = mockFetchByUrl({
-        "1": { id: "1", name: "Store 1" },
-        "2": { id: "2", name: "Store 2" },
+        "1": makeStoreDto("1"),
+        "2": makeStoreDto("2"),
       });
       await storeService.toggleFavorite("1");
       await storeService.toggleFavorite("2");
       await storeService.toggleFavorite("1");
 
       await expect(storeService.fetchFavorites()).resolves.toEqual([
-        { id: "2", name: "Store 2" },
+        makeStoreModel("2"),
       ]);
       expect(fetchMock).not.toHaveBeenCalledWith(`${BASE_URL}/stores/1`);
     });
 
     it("throws when one of the favorite requests fails", async () => {
-      mockFetchByUrl({ "1": { id: "1", name: "Store 1" } }, { "2": 404 });
+      mockFetchByUrl({ "1": makeStoreDto("1") }, { "2": 404 });
       await storeService.toggleFavorite("1");
       await storeService.toggleFavorite("2");
 

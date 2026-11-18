@@ -1,4 +1,3 @@
-import { StoresModel } from "@/domain/stores/StoresModel";
 import { StoresServiceType } from "@/domain/stores/StoresService";
 import {
   BASE_URL,
@@ -9,8 +8,12 @@ import {
   readStringList,
   toggleStringListItem,
 } from "../infrastructure";
+import { StoreDto, toStoresModel } from "./storeMapper";
 
-export const STORES_PAGE_SIZE = 5;
+const fetchStoreDto = (id: string) =>
+  fetchJson<StoreDto>(`${BASE_URL}/stores/${id}`);
+
+export const STORES_PAGE_SIZE = 10;
 export const FAVORITES_STORAGE_KEY = "favorites";
 
 export const storeService: StoresServiceType = {
@@ -21,20 +24,18 @@ export const storeService: StoresServiceType = {
       perPage: STORES_PAGE_SIZE,
     });
 
-    const { data, next } = await fetchJson<PaginatedResponse<StoresModel>>(
+    const { data, next } = await fetchJson<PaginatedResponse<StoreDto>>(
       `${BASE_URL}/stores?${query}`,
     );
-    return { stores: data, nextPage: next };
+    return { stores: data.map(toStoresModel), nextPage: next };
   },
-  fetchStoreById: async (id: string) =>
-    fetchJson<StoresModel>(`${BASE_URL}/stores/${id}`),
+  fetchStoreById: async (id: string) => toStoresModel(await fetchStoreDto(id)),
   toggleFavorite: (id: string) =>
     toggleStringListItem(FAVORITES_STORAGE_KEY, id),
   isFavorite: (id: string) => hasStringListItem(FAVORITES_STORAGE_KEY, id),
   fetchFavorites: async () => {
     const favorites = await readStringList(FAVORITES_STORAGE_KEY);
-    return Promise.all(
-      favorites.map((id) => fetchJson<StoresModel>(`${BASE_URL}/stores/${id}`)),
-    );
+    const dtos = await Promise.all(favorites.map(fetchStoreDto));
+    return dtos.map(toStoresModel);
   },
 };
