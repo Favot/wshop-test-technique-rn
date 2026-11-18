@@ -60,6 +60,5 @@ export const useCartStore = create<CartState>()(
   ),
 );
 
-export const selectCartTotal = (_state: CartState): number => {
-  return NaN;
-};
+export const selectCartTotal = (state: CartState): number =>
+  state.items.reduce((total, item) => total + item.price * item.quantity, 0);
