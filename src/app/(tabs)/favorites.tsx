@@ -11,7 +11,7 @@ import { WebBadge } from "@/components/web-badge";
 import { BottomTabInset, MaxContentWidth, Spacing } from "@/constants/theme";
 import { useTheme } from "@/hooks/use-theme";
 
-export default function TabTwoScreen() {
+export default function FavoritesScreen() {
   const safeAreaInsets = useSafeAreaInsets();
   const insets = {
     ...safeAreaInsets,
@@ -40,7 +40,7 @@ export default function TabTwoScreen() {
     >
       <ThemedView style={styles.container}>
         <ThemedView style={styles.titleContainer}>
-          <ThemedText type="subtitle">Explore</ThemedText>
+          <ThemedText type="subtitle">Favorites</ThemedText>
           <ThemedText style={styles.centerText} themeColor="textSecondary">
             This starter app includes example{"\n"}code to help you get started.
           </ThemedText>
@@ -68,7 +68,7 @@ export default function TabTwoScreen() {
             <ThemedText type="small">
               This app has two screens:{" "}
               <ThemedText type="code">src/app/index.tsx</ThemedText> and{" "}
-              <ThemedText type="code">src/app/explore.tsx</ThemedText>
+              <ThemedText type="code">src/app/(tabs)/favorites.tsx</ThemedText>
             </ThemedText>
             <ThemedText type="small">
               The layout file in{" "}
