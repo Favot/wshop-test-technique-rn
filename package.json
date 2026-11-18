@@ -43,7 +43,9 @@
     "web": "expo start --web",
     "lint": "expo lint",
     "test:run": "jest",
-    "test:watch": "jest --watchAll"
+    "test:watch": "jest --watchAll",
+    "tsc:check": "tsc --noEmit",
+    "tsc:watch": "tsc --watch --noEmit"
   },
   "jest": {
     "preset": "jest-expo",
